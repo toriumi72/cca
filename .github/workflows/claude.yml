@@ -9,6 +9,8 @@ on:
     types: [opened, assigned]
   pull_request_review:
     types: [submitted]
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   claude:
@@ -16,22 +18,98 @@ jobs:
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))) ||
+      (github.event_name == 'pull_request' && (contains(github.event.pull_request.body, '@claude') || contains(github.event.pull_request.title, '@claude')))
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # 並列実行制限（コスト最適化）
+    concurrency:
+      group: claude-${{ github.ref }}
+      cancel-in-progress: true
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      pull-requests: write
+      issues: write
       id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@beta
         with:
+          # セキュリティを重視した明示的なツール設定
+          allowed_tools: [
+            "Bash(npm install)",
+            "Bash(npm run build)",
+            "Bash(npm run lint)",
+            "Bash(npm run dev)",
+            "Bash(npm run start)",
+            "Bash(npm audit)",
+            "Bash(npm outdated)",
+            "Bash(npx tsc --noEmit)",
+            "Bash(npx eslint .)",
+            "Bash(git status)",
+            "Bash(git log --oneline -10)",
+            "Bash(git log --since='1 week ago')",
+            "Bash(git show --name-only)",
+            "Bash(git blame)",
+            "Bash(git diff)",
+            "Bash(git diff --cached)",
+            "Bash(git diff HEAD~1)",
+            "Bash(git ls-files)",
+            "Bash(git branch -a)",
+            "Bash(git tag)",
+            "Bash(git reflog -10)",
+            "View",
+            "GlobTool",
+            "GrepTool",
+            "BatchTool",
+            "Bash(find src -name '*.ts' -o -name '*.tsx' | head -20)",
+            "Bash(find src -name '*.js' -o -name '*.jsx' | head -20)",
+            "Bash(wc -l src/**/*.{ts,tsx,js,jsx})",
+            "Bash(du -sh node_modules)",
+            "Bash(npm audit --audit-level moderate)",
+            "Bash(grep -r 'console.log' src/ || true)",
+            "Bash(grep -r 'debugger' src/ || true)"
+          ]
+          
+          # パフォーマンス最適化設定
+          max_turns: 10
+          timeout_minutes: 25
+          
+          # APIキーはGitHub Secretsから取得（セキュリティベストプラクティス）
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # 自動レビュー機能：PRが作成された際の自動分析
+      - name: Auto Review PR
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        uses: anthropics/claude-code-action@beta
+        with:
+          prompt: |
+            このプルリクエストを詳細にレビューしてください：
+            
+            1. **コード品質**: TypeScript、React、Next.jsのベストプラクティスに従っているか
+            2. **セキュリティ**: 潜在的な脆弱性や機密情報の露出がないか
+            3. **パフォーマンス**: 不要な再レンダリングやバンドルサイズへの影響
+            4. **アクセシビリティ**: WCAG準拠とセマンティックHTML
+            5. **テスト**: 適切なテストカバレッジ
+            6. **ドキュメント**: 必要な文書化
+            
+            CLAUDE.mdのガイドラインに基づいて評価し、改善提案を含めてください。
+            
+          allowed_tools: [
+            "Bash(git diff origin/main...HEAD)",
+            "Bash(git show --name-only HEAD)",
+            "View",
+            "GlobTool",
+            "GrepTool",
+            "Bash(npm run lint)",
+            "Bash(npx tsc --noEmit)"
+          ]
+          max_turns: 5
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
