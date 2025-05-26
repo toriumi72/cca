@@ -42,40 +42,40 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           # セキュリティを重視した明示的なツール設定
-          allowed_tools: [
-            "Bash(npm install)",
-            "Bash(npm run build)",
-            "Bash(npm run lint)",
-            "Bash(npm run dev)",
-            "Bash(npm run start)",
-            "Bash(npm audit)",
-            "Bash(npm outdated)",
-            "Bash(npx tsc --noEmit)",
-            "Bash(npx eslint .)",
-            "Bash(git status)",
-            "Bash(git log --oneline -10)",
-            "Bash(git log --since='1 week ago')",
-            "Bash(git show --name-only)",
-            "Bash(git blame)",
-            "Bash(git diff)",
-            "Bash(git diff --cached)",
-            "Bash(git diff HEAD~1)",
-            "Bash(git ls-files)",
-            "Bash(git branch -a)",
-            "Bash(git tag)",
-            "Bash(git reflog -10)",
-            "View",
-            "GlobTool",
-            "GrepTool",
-            "BatchTool",
-            "Bash(find src -name '*.ts' -o -name '*.tsx' | head -20)",
-            "Bash(find src -name '*.js' -o -name '*.jsx' | head -20)",
-            "Bash(wc -l src/**/*.{ts,tsx,js,jsx})",
-            "Bash(du -sh node_modules)",
-            "Bash(npm audit --audit-level moderate)",
-            "Bash(grep -r 'console.log' src/ || true)",
-            "Bash(grep -r 'debugger' src/ || true)"
-          ]
+          # allowed_tools: [
+          #   "Bash(npm install)",
+          #   "Bash(npm run build)",
+          #   "Bash(npm run lint)",
+          #   "Bash(npm run dev)",
+          #   "Bash(npm run start)",
+          #   "Bash(npm audit)",
+          #   "Bash(npm outdated)",
+          #   "Bash(npx tsc --noEmit)",
+          #   "Bash(npx eslint .)",
+          #   "Bash(git status)",
+          #   "Bash(git log --oneline -10)",
+          #   "Bash(git log --since='1 week ago')",
+          #   "Bash(git show --name-only)",
+          #   "Bash(git blame)",
+          #   "Bash(git diff)",
+          #   "Bash(git diff --cached)",
+          #   "Bash(git diff HEAD~1)",
+          #   "Bash(git ls-files)",
+          #   "Bash(git branch -a)",
+          #   "Bash(git tag)",
+          #   "Bash(git reflog -10)",
+          #   "View",
+          #   "GlobTool",
+          #   "GrepTool",
+          #   "BatchTool",
+          #   "Bash(find src -name '*.ts' -o -name '*.tsx' | head -20)",
+          #   "Bash(find src -name '*.js' -o -name '*.jsx' | head -20)",
+          #   "Bash(wc -l src/**/*.{ts,tsx,js,jsx})",
+          #   "Bash(du -sh node_modules)",
+          #   "Bash(npm audit --audit-level moderate)",
+          #   "Bash(grep -r 'console.log' src/ || true)",
+          #   "Bash(grep -r 'debugger' src/ || true)"
+          # ]
           
           # パフォーマンス最適化設定
           max_turns: 10
@@ -101,15 +101,15 @@ jobs:
             
             CLAUDE.mdのガイドラインに基づいて評価し、改善提案を含めてください。
             
-          allowed_tools: [
-            "Bash(git diff origin/main...HEAD)",
-            "Bash(git show --name-only HEAD)",
-            "View",
-            "GlobTool",
-            "GrepTool",
-            "Bash(npm run lint)",
-            "Bash(npx tsc --noEmit)"
-          ]
+          # allowed_tools: [
+          #   "Bash(git diff origin/main...HEAD)",
+          #   "Bash(git show --name-only HEAD)",
+          #   "View",
+          #   "GlobTool",
+          #   "GrepTool",
+          #   "Bash(npm run lint)",
+          #   "Bash(npx tsc --noEmit)"
+          # ]
           max_turns: 5
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
